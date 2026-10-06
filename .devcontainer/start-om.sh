@@ -5,8 +5,9 @@ VER=2.0.3
 FILE=docker-compose-postgres.yml
 
 # wait for Docker inside the codespace
-until docker info >/dev/null 2>&1; do sleep 2; done
-
+   # wait for Docker inside the codespace (max 60s)
+   for i in $(seq 1 30); do docker info >/dev/null 2>&1 && break; sleep 2; done
+   docker info >/dev/null 2>&1 || { echo "❌ Docker not available - run 'Codespaces: Full Rebuild Container'"; exit 1; }
 # download compose file once
 [ -f "$FILE" ] || curl -sL -o "$FILE" \
   "https://github.com/open-metadata/OpenMetadata/releases/download/${VER}-release/${FILE}"
