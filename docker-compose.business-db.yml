@@ -1,0 +1,26 @@
+# Sample "Acme Retail" business database, started alongside OpenMetadata.
+# Used together with the official file:
+#   docker compose -f docker-compose-postgres.yml -f docker-compose.business-db.yml up -d
+services:
+  business-db:
+    container_name: business_db
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_DB: business
+      POSTGRES_USER: business_admin
+      POSTGRES_PASSWORD: business_admin
+    ports:
+      - "5433:5432"
+    volumes:
+      - business-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U business_admin -d business"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      - app_net
+
+volumes:
+  business-db-data:

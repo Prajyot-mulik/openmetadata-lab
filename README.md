@@ -13,10 +13,34 @@ OpenMetadata 2.0.3 running in GitHub Codespaces (Docker-in-Docker + official com
 3. Open the **PORTS** tab and click the globe icon on port **8585**.
 4. Login: `admin@open-metadata.org` / `admin`
 
+## Sample business database (`business_db`)
+
+A fictional "Acme Retail" Postgres database runs next to OpenMetadata and is imported automatically
+on every start (OpenMetadata → **Explore → Databases → acme_business_db**).
+
+| Schema      | Tables / views                                              |
+|-------------|-------------------------------------------------------------|
+| `hr`        | departments, employees                                      |
+| `crm`       | customers, addresses                                        |
+| `catalog`   | categories, suppliers, products                             |
+| `sales`     | orders, order_items, payments                               |
+| `inventory` | warehouses, stock_levels                                    |
+| `finance`   | invoices                                                    |
+| `analytics` | daily_revenue, customer_lifetime_value, low_stock (views)   |
+
+Schema changes are versioned migrations in [business-db/migrations](business-db/migrations).
+To change the schema, add the next file (e.g. `V010__add_returns.sql`), then:
+
+```bash
+bash business-db/migrate.sh                                                     # apply new migrations
+docker exec -i openmetadata_ingestion python - < business-db/register_in_openmetadata.py   # re-import into OpenMetadata
+docker exec -it business_db psql -U business_admin business                    # SQL shell
+```
+
 ## Useful commands
 
 ```bash
-docker compose -f docker-compose-postgres.yml ps        # status
+docker compose -f docker-compose-postgres.yml -f docker-compose.business-db.yml ps   # status
 docker compose -f docker-compose-postgres.yml logs -f openmetadata-server
 bash .devcontainer/start-om.sh                          # (re)start everything
 cat /tmp/openmetadata-start.log                         # startup log

@@ -29,14 +29,20 @@ if [ ! -s "$FILE" ]; then
 fi
 
 echo "Starting containers (first run pulls ~5 GB of images, takes 5-10 min)..."
-docker compose -f "$FILE" up -d || { echo "❌ docker compose failed"; exit 1; }
+docker compose -f "$FILE" -f docker-compose.business-db.yml up -d || { echo "❌ docker compose failed"; exit 1; }
+
+# Sample business database: apply any new migrations
+bash business-db/migrate.sh || echo "⚠️ business_db migrations failed (see above)"
 
 echo "Waiting for OpenMetadata UI on port 8585..."
 for i in $(seq 1 120); do
-  if curl -fs -o /dev/null http://localhost:8585; then
+  if curl -fs -o /dev/null http://localhost:8585/api/v1/system/version; then
     echo "✅ OpenMetadata is ready: open the PORTS tab -> 8585 (login: admin@open-metadata.org / admin)"
+    echo "Importing business_db metadata into OpenMetadata..."
+    docker exec -i openmetadata_ingestion python - < business-db/register_in_openmetadata.py \
+      || echo "⚠️ business_db import failed. Retry: docker exec -i openmetadata_ingestion python - < business-db/register_in_openmetadata.py"
     exit 0
   fi
   sleep 5
 done
-echo "⚠️ Still starting. Check with: docker compose -f $FILE ps   (log: $LOG)"
+echo "⚠️ Still starting. Check with: docker compose -f $FILE -f docker-compose.business-db.yml ps   (log: $LOG)"
