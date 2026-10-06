@@ -1,0 +1,13 @@
+{
+  "name": "OpenMetadata Lab",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "hostRequirements": { "cpus": 4, "memory": "16gb" },
+  "forwardPorts": [8585],
+  "portsAttributes": {
+    "8585": { "label": "OpenMetadata UI", "onAutoForward": "notify" }
+  },
+  "postStartCommand": "bash .devcontainer/start-om.sh"
+}
