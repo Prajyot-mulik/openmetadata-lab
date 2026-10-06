@@ -1,13 +1,23 @@
-cat > .devcontainer/devcontainer.json <<'EOF'
 {
   "name": "OpenMetadata Lab",
-  "image": "mcr.microsoft.com/devcontainers/universal:2",
-  "hostRequirements": { "cpus": 4, "memory": "16gb" },
-  "forwardPorts": [8585],
-  "portsAttributes": { "8585": { "label": "OpenMetadata UI" } },
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true,
+      "dockerDashComposeVersion": "v2"
+    }
+  },
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb",
+    "storage": "32gb"
+  },
+  "forwardPorts": [8585, 8080],
+  "portsAttributes": {
+    "8585": { "label": "OpenMetadata UI", "onAutoForward": "openBrowser" },
+    "8080": { "label": "Airflow (ingestion)", "onAutoForward": "silent" }
+  },
+  "otherPortsAttributes": { "onAutoForward": "ignore" },
   "postStartCommand": "bash .devcontainer/start-om.sh"
 }
-EOF
-git add .devcontainer/devcontainer.json
-git commit -m "use universal image (docker built in)"
-git push
